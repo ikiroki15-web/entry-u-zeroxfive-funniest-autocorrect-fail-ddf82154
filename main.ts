@@ -13,14 +13,23 @@ const OUTPUT_PATH = "/output/entry.txt";
 const MAX_CHARS = 199;
 
 // The fail: "milk" autocorrected to "Mike". One wrong word, one very
-// awkward dinner guest.
-const opener = "Texted my wife";
-const quotedAsk = "'pick up milk on your way home'";
-const twist = "autocorrect changed it to 'pick up Mike'";
-const fallout = "and now Mike is coming to dinner.";
+// awkward dinner guest. The slip pair is checked below so a future edit
+// cannot silently drop the joke.
+const SLIP = { intended: "milk", sent: "Mike" };
 
-const parts = [opener, quotedAsk, "—", twist, fallout];
-const line = parts.join(" ");
+function buildLine(): string {
+  const opener = "Texted my wife";
+  const quotedAsk = `'pick up ${SLIP.intended} on your way home'`;
+  const twist = `autocorrect changed it to 'pick up ${SLIP.sent}'`;
+  const fallout = `and now ${SLIP.sent} is coming to dinner.`;
+  return [opener, quotedAsk, "—", twist, fallout].join(" ");
+}
+
+const line = buildLine();
+
+if (!line.includes(SLIP.intended) || !line.includes(SLIP.sent)) {
+  throw new Error("entry lost the autocorrect slip");
+}
 
 if (line.length < 1 || line.length > MAX_CHARS) {
   throw new Error(`entry is ${line.length} chars, must be 1-199`);
